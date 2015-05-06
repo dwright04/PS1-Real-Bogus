@@ -1,0 +1,53 @@
+import pickle, optparse
+from classify import predict
+from profiling import plot_ROC
+
+def main():
+    parser = optparse.OptionParser("[!] usage: python classify.py\n"+\
+                                   " -F <data file>\n"+\
+                                   " -c <classifier file>\n"+\
+                                   " -t <threshold [default=0.5]>\n"+\
+                                   " -s <data set>\n"+\
+                                   " -o <output file>\n"
+                                   " -p <plot hypothesis distribution [optional]>\n"+\
+                                   " -r <plot ROC curve [optional]>\n"+\
+                                   " -f <output Figure of Merit [optional]>\n"+\
+                                   " -n <classify by name [optional]>\n"
+                                   " -P <pooled features file [optional]>")
+        
+    parser.add_option("-F", dest="dataFile", type="string", \
+                      help="specify data file to analyse")
+    parser.add_option("-c", dest="classifierFile", type="string", \
+                      help="specify classifier to use")
+    parser.add_option("-t", dest="threshold", type="float", \
+                      help="specify decision boundary threshold [default=0.5]")
+    parser.add_option("-o", dest="outputFile", type="string", \
+                      help="specify output file")
+    parser.add_option("-s", dest="dataSet", type="string", \
+                      help="specify data set to analyse [default=test]")
+    parser.add_option("-p", action="store_true", dest="plot", \
+                      help="specify whether to plot the hypothesis distribution [optional]")
+    parser.add_option("-r", action="store_true", dest="roc", \
+                      help="specify whether to plot the ROC curve [optional]")
+    parser.add_option("-f", action="store_true", dest="fom", \
+                      help="specify whether to output Figure of Merit to stdout [optional]")
+    parser.add_option("-n", action="store_true", dest="byName", \
+                      help="specify whether to classify objects by name [optional]")
+    parser.add_option("-P", dest="poolFile", type="string", \
+                      help="specify pooled features file [optional]")
+
+
+    (options, args) = parser.parse_args()
+    dataFile = options.dataFile
+    classifierFile = options.classifierFile
+    threshold = options.threshold
+    outputFile = options.outputFile
+    dataSet = options.dataSet
+    plot = options.plot
+    roc = options.roc
+    fom = options.fom
+    byName = options.byName
+    poolFile = options.poolFile
+
+if __name__ == "__main__":
+    main()

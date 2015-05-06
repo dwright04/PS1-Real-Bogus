@@ -571,13 +571,16 @@ class NeuralNet(object):
             plt.plot(iters, costs)
         iteration += 1
 
-    def predict(self, input):
+    def predict_proba(self, input):
         
         thetas = self.reshapeParams(self._trainedParams)
         m = int(np.shape(input)[1]) # get the number of examples
         input = np.concatenate((np.tile(1, (1, m)), input), axis=0) # add bias units
         hypothesis, activations, regTerm = self.feedForward(thetas, input, regTerm=0, m=m)
-        return hypothesis
+        pred = np.ones((m,2))
+        pred[:,0] = pred[:,0] * (1-hypothesis)
+        pred[:,1] = pred[:,1] * hypothesis
+        return pred
 
     def generateSetupDict(self):
         neuralNetSetupDict = {}
