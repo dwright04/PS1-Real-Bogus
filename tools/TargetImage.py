@@ -122,7 +122,7 @@ class TargetImage(object):
         pylab.ion()
         pylab.clf()
         #pylab.set_cmap("bone")
-        pylab.bone()
+        pylab.hot()
         pylab.title("image: %s" % self.fitsFile)
         pylab.imshow(np.reshape(self.signPreserveNorm(), shape, order="F"), interpolation="nearest")
         pylab.plot(np.arange(0,2*self.extent), self.extent*np.ones((2*self.extent,)), "r--")

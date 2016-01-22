@@ -29,6 +29,7 @@ from build_data_set import process_examples, build_data_set, signPreserveNorm, b
 
 sys.path.insert(1, "/Users/dew/development/PS1-Real-Bogus/demos/")
 import mlutils
+PATH = "/Users/dew/myscripts/machine_learning/data/3pi/detectionlist/"
 
 """
 import os
@@ -59,6 +60,7 @@ class NavigationControlBox(wx.Panel):
         wx.Panel.__init__(self, parent, ID)
         
         self.frame = frame
+        #self.frame = parent
         box = wx.StaticBox(self, -1, label)
         sizer = wx.StaticBoxSizer(box, wx.VERTICAL)
         
@@ -321,7 +323,7 @@ class mainFrame(wx.Frame):
     title = 'Main Console'
     def __init__(self, dataSetDict, infoDict):
         # 10x10 inches, 100 dots-per-inch, so set size to (1000,1000)
-        wx.Frame.__init__(self, None, -1, self.title, size=(1000,1000))
+        wx.Frame.__init__(self, None, -1, self.title, size=(1000,1000),pos=(50,50))
         
         self.dataSetDict = dataSetDict
         self.infoDict = infoDict
@@ -345,6 +347,7 @@ class mainFrame(wx.Frame):
         # Create the mpl Figure and FigCanvas objects.
         # 10x10 inches, 100 dots-per-inch
         #
+
         self.dpi = 100
         self.fig = Figure((8.0, 8.0), dpi=self.dpi)
         self.fig.subplots_adjust(left=0.1, bottom=0.01, right=0.9, top=0.99, wspace=0.05, hspace=0.05)
@@ -355,8 +358,9 @@ class mainFrame(wx.Frame):
             self.AXES.append(ax)
         
         self.create_main_panel()
+        #self.create_main_panel()
         self.navigation_control.previous_button.Disable()
-
+        
         if "true_pos_X" not in self.dataSetDict.keys():
             self.data_set_control.tp_button.Disable()
             self.data_set_control.fp_button.Disable()
@@ -364,6 +368,7 @@ class mainFrame(wx.Frame):
             self.data_set_control.fn_button.Disable()
         
     def create_main_panel(self):
+
         self.panel = wx.Panel(self)
         m, n = np.shape(self.X)
         self.set_text = wx.StaticText(self.panel, -1, label="Showing : All (%d examples)" % m)
@@ -389,26 +394,30 @@ class mainFrame(wx.Frame):
         self.reset_button.Bind(wx.EVT_BUTTON, self.on_reset)
         self.exit_button = wx.Button(self.panel, -1, label="Exit")
         self.exit_button.Bind(wx.EVT_BUTTON, self.on_exit)
-        
+
         self.vbox1 = wx.BoxSizer(wx.VERTICAL)
-        self.vbox1.Add(self.build_button, 0, flag=wx.CENTER | wx.TOP)
-        self.vbox1.Add(self.reset_button, 0, flag=wx.CENTER | wx.TOP)
-        self.vbox1.Add(self.exit_button, 0, flag=wx.CENTER | wx.TOP)
+        self.vbox1.Add(self.build_button, 0, flag=wx.CENTER | wx.BOTTOM)
+        self.vbox1.Add(self.reset_button, 0, flag=wx.CENTER | wx.BOTTOM)
+        self.vbox1.Add(self.exit_button, 0, flag=wx.CENTER | wx.BOTTOM)
+        #self.panel.SetSizer(self.vbox1)
+        #self.vbox1.Fit(self)
         
         self.hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.hbox2.Add(self.label_key_box, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         self.hbox2.Add(self.data_set_control, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         self.hbox2.Add(self.navigation_control, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         self.hbox2.Add(self.vbox1, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        #text = wx.StaticText(self.panel, -1, label="TEST")
+        #self.hbox2.Add(text, border=5, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         
         self.vbox2 = wx.BoxSizer(wx.VERTICAL)
         self.vbox2.Add(self.hbox1, 0, flag=wx.CENTER | wx.TOP)
-        self.vbox2.Add(self.canvas, 1, flag=wx.LEFT | wx.TOP | wx.GROW)
-        self.vbox2.Add(self.hbox2, 2, flag=wx.ALIGN_RIGHT | wx.TOP)
+        self.vbox2.Add(self.canvas, 1, flag=wx.CENTER | wx.CENTER | wx.GROW)
+        self.vbox2.Add(self.hbox2, 0, flag=wx.LEFT | wx.TOP)
         
         self.panel.SetSizer(self.vbox2)
         self.vbox2.Fit(self)
-    
+
     def draw_fig(self, init=False):
 
         #matplotlib.pyplot.clf()
@@ -697,8 +706,8 @@ class LabellingControlBox(wx.Panel):
         if self.frame.file.split("/")[-1] in set(self.frame.caller.new_real_files):
             self.frame.caller.new_real_files.remove(self.frame.file.split("/")[-1])
         self.frame.caller.new_ghost_files.append(self.frame.file.split("/")[-1])
-        for i in range(4):
-            self.frame.caller.axes.lines.pop(0)
+        #for i in range(4):
+        #    self.frame.caller.axes.lines.pop(0)
         #self.frame.caller.axes.plot([0, 20], [0, 0], color="#9933FF", lw=3)
         #self.frame.caller.axes.plot([0, 0], [0, 20.5], color="#9933FF", lw=3)
         #self.frame.caller.axes.plot([0, 20], [20.5, 20.5], color="#9933FF", lw=3)
@@ -763,18 +772,30 @@ class InspectorFrame(wx.Frame):
         wx.Frame.__init__(self, None, -1, self.title, size=(800,800))
         self.caller = caller
         self.info = info
-        #self.file = info[7]
-        print self.caller.to_plot
+        #print self.info
+        self.file = PATH + str(int(info[-1])) + "/" + info[-3].split("/")[-1]
+        #print self.caller.to_plot
+        """
         if infoFlag:
             self.file = info[6].split("/")[-1].strip()
             self.smallImage = self.caller.to_plot[self.caller.files_to_plot.index(self.file),:]
         else:
             self.file = info[0]
             self.smallImage = self.caller.to_plot[self.info[1],:]
-        print self.file
-        #self.smallImage = np.nan_to_num(TargetImage(self.file, 10).signPreserveNorm())
-        #self.largeImage = np.nan_to_num(TargetImage(self.file, 50).unravelObject())
-        self.largeImage = self.smallImage
+        """
+        #print self.file
+        try:
+            self.smallImage = np.nan_to_num(TargetImage(self.file, 10).signPreserveNorm())
+        except IOError:
+            try:
+                self.file = PATH + "2" + "/" + info[-3].split("/")[-1]
+                self.smallImage = np.nan_to_num(TargetImage(self.file, 10).signPreserveNorm())
+            except IOError, e:
+                print e
+        try:
+            self.largeImage = np.nan_to_num(TargetImage(self.file, 50).unravelObject())
+        except IOError:
+            self.largeImage = self.smallImage
         self.create_main_panel()
     
     def create_main_panel(self):
@@ -842,7 +863,10 @@ class InspectorFrame(wx.Frame):
         ax2.set_yticks([0.5,extentLarge-0.5,2*extentLarge-0.5])
         ax2.set_yticklabels([1,extentLarge,2*extentLarge])
     
-        ImageLarge = np.reshape(self.largeImage, (int(2*extentLarge),int(2*extentLarge)), order="F")
+        try:
+            ImageLarge = np.reshape(self.largeImage, (int(2*extentLarge),int(2*extentLarge)), order="F")
+        except:
+            ImageLarge = np.reshape(self.largeImage, (100,100), order="F")
         im2 = ax2.imshow(ImageLarge, interpolation="nearest", cmap="hot", origin="lower")
         ax2.plot(np.arange(0,2*extentLarge), (extentLarge-0.5)*np.ones((2*extentLarge,)), "k-")
         ax2.plot((extentLarge-0.5)*np.ones((2*extentLarge,)), np.arange(0,2*extentLarge), "k-")
@@ -1015,7 +1039,15 @@ def main():
     dataSetDict["X"] = X
     dataSetDict["y"] = y
     dataSetDict["files"] = [str(x).rstrip() for x in files]
-    print infoDict.keys()
+    
+    dataSetDict["bogus_X"] = X[y==0,:]
+    dataSetDict["bogus_y"] = y[y==0]
+    dataSetDict["bogus_files"] = [str(x).rstrip() for x in files[y==0]]
+    
+    dataSetDict["real_X"] = X[y==1,:]
+    dataSetDict["real_y"] = y[y==1]
+    dataSetDict["real_files"] = [str(x).rstrip() for x in files[y==1]]
+    #print infoDict.keys()
     app = wx.App(False)
     app.frame = mainFrame(dataSetDict, infoDict)
     app.frame.Show()

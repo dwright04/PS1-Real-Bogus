@@ -219,7 +219,7 @@ def plot_MDR_vs_mag(clfFile, X, fileList, infoFile, threshold=0.5, color="#FF006
             continue
         preds_for_bin = pred[np.squeeze(np.where(bin_allocations == i))]
 
-        MDRs.append(np.shape(np.where(preds_for_bin < threshold))[1] / float(n[i-1]))
+        MDRs.append(np.shape(np.where(preds_for_bin >= threshold))[1] / float(n[i-1]))
     print MDRs
     mid_points = []
     for i in range(len(bins)-1):
@@ -250,12 +250,12 @@ def plot_MDR_vs_mag(clfFile, X, fileList, infoFile, threshold=0.5, color="#FF006
     ax2.plot(mid_points, MDRs, "-",color = "k", lw=3)
     ax2.plot(mid_points, MDRs, "-",label="new", color = color, lw=2)
     ax2.plot(mid_points, MDRs, "o", color = color, ms=5)#3366FF
-    ax2.plot(mid_points+[12,18,25], 0.016*np.ones(np.shape(mid_points+[12, 18, 25])), "--", color="k", lw=2)
+    ax2.plot(mid_points+[12,18,25], 0.211*np.ones(np.shape(mid_points+[12, 18, 25])), "--", color="k", lw=2)
 
     ax2.set_ylabel("Missed Detection Rate")
     ax2.set_xlim(xmin=13.9, xmax=22.1)
     ax2.grid()
-    ax2.text(14.1,0.03,"0.016", size=18, color="k")
+    ax2.text(14.1,0.215,"0.211", size=18, color="k")
 
 
     #ax2.legend()
@@ -388,9 +388,9 @@ def main():
     
     #plot_dist(training_inputFile, testing_inputFile, alpha2=0.75)
     fileList = []
-    for file in files[y==1]:
+    for file in files[y==0]:
         fileList.append(str(file).rstrip())
-    plot_MDR_vs_mag(classifierFile, X[y==1,:], fileList, infoFile, threshold, color="#FF0066")
+    plot_MDR_vs_mag(classifierFile, X[y==0,:], fileList, infoFile, threshold, color="#04E762")
     
 if __name__ == "__main__":
     main()

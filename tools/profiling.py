@@ -14,6 +14,7 @@ def visualiseImages(X, pred, annotate=True):
     
     dim = np.ceil(np.sqrt(m))
     k = int(np.sqrt(n))
+    dim = 4
     
     fig = plt.figure(facecolor="k")
     for i in range(m):
@@ -103,17 +104,26 @@ def main():
     
     if poolFile != None:
         try:
+            scaler = preprocessing.MinMaxScaler()
+            #tmp = sio.loadmat("../ufldl/sparsefiltering/features/SF_maxiter100_L1_md_20x20_skew4_SignPreserveNorm_with_confirmed1_6x6_k400_patches_stl-10_unlabeled_meansub_20150409_psdb_6x6_pooled5.mat")["pooledFeaturesTrain"]
+            tmp = sio.loadmat("../ufldl/sparsefiltering/features/SF_maxiter100_L1_3pi_20x20_skew2_signPreserveNorm_6x6_k400_patches_stl-10_unlabeled_meansub_20150409_psdb_6x6_pooled5.mat")["pooledFeaturesTrain"]
+            tmp = np.transpose(tmp, (0,2,3,1))
+            numTrainImages = np.shape(tmp)[3]
+            tmp = np.reshape(tmp, (int((tmp.size)/float(numTrainImages)), \
+                             numTrainImages), order="F")
+            print np.shape(tmp)
+            scaler.fit(tmp.T)  # Don't cheat - fit only on training data
+            tmp = None
+                                           
             features = sio.loadmat(poolFile)
+            #pooledFeaturesTrain = np.concatenate((features["pooledFeaturesTrain"],features["pooledFeaturesTest"] ),axis=1)
             pooledFeaturesTrain = features["pooledFeaturesTrain"]
             X = np.transpose(pooledFeaturesTrain, (0,2,3,1))
             numTrainImages = np.shape(X)[3]
             X = np.reshape(X, (int((pooledFeaturesTrain.size)/float(numTrainImages)), \
                            numTrainImages), order="F")
-            # load pooled feature scaler
-            #scaler = mlutils.getMinMaxScaler("/Users/dew/development/PS1-Real-Bogus/ufldl/sparsefiltering/features/SF_maxiter100_L1_3pi_20x20_skew2_signPreserveNorm_6x6_k400_patches_naturalImages_6x6_signPreserveNorm_pooled5.mat")
-            #scaler = mlutils.getMinMaxScaler("/Users/dew/development/PS1-Real-Bogus/ufldl/sparsefiltering/features/SF_maxiter100_L1_3pi_20x20_skew2_signPreserveNorm_6x6_k400_patches_stlTrainSubset_whitened_6x6_signPreserveNorm_pooled5.mat")
-            scaler = preprocessing.MinMaxScaler()
-            scaler.fit(X.T)  # Don't cheat - fit only on training data
+            #scaler = preprocessing.MinMaxScaler()
+            #scaler.fit(X.T)  # Don't cheat - fit only on training data
             X = scaler.transform(X.T)
             if dataSet == "training":
                 pass
@@ -137,8 +147,23 @@ def main():
         
     if dataSet == "training":
         X = data["X"]
+        try:
+            files = data["images"]
+        except KeyError:
+            try:
+                files = data["train_files"]
+            except KeyError, e:
+                print e
+                try:
+                    files = data["files"]
+                except KeyError, e:
+                    print e
+                    print "[!] Exiting: Could not load training set from %s" % dataFile
+                    exit(0)
+
     elif dataSet == "test":
         X = data["testX"]
+        files = data["test_files"]
     data = None
     m,n = np.shape(X)
     print "[*] %d examples." % (m)
@@ -160,7 +185,17 @@ def main():
         fpX = X[y==0][false_pos,:]
         fp_pred = pred[y==0][false_pos]
     
-        visualiseImages(fpX[:400], fp_pred[:400], True)
+        visualiseImages(fpX[:100], fp_pred[:100], True)
+
+    positives = files[y==1]
+    negatives = files[y==0]
+    print "[+] Missed Detection files :"
+    for index in false_neg:
+        print str(positives[index]).rstrip()
+    print
+    print "[+] False Positive files :"
+    for index in false_pos:
+        print str(negatives[index]).rstrip()
     
 
 if __name__ == "__main__":
