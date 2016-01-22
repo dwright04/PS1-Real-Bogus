@@ -78,10 +78,10 @@ def main():
         exit(0)
 
     if dataSet == "training":
-        X = data["X"]
+        X = np.nan_to_num(data["X"])
         y = np.squeeze(data["y"])
     elif dataSet == "test":
-        X = data["testX"]
+        X = np.nan_to_num(data["testX"])
         y = np.squeeze(data["testy"])
 
     try:
