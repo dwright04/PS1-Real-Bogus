@@ -32,7 +32,7 @@ def main(argv = None):
 
     #train_x = np.concatenate((data["X"], data["validX"]))
     #train_y = np.squeeze(np.concatenate((data["y"], data["validy"])))
-    train_x = data["X"]
+    train_x = np.nan_to_num(data["X"])
     train_y = np.squeeze(data["y"])
 
     rf = train_RF(train_x, train_y, n_estimators, max_features, min_samples_leaf)

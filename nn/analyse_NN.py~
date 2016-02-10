@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
+from NeuralNet import NeuralNet
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_curve
 
@@ -78,10 +79,10 @@ def main():
         exit(0)
 
     if dataSet == "training":
-        X = np.nan_to_num(data["X"])
+        X = data["X"]
         y = np.squeeze(data["y"])
     elif dataSet == "test":
-        X = np.nan_to_num(data["testX"])
+        X = data["testX"]
         y = np.squeeze(data["testy"])
 
     try:

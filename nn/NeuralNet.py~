@@ -270,13 +270,13 @@ class NeuralNet(object):
         """
 
         thetas = {1:np.reshape(params[0:self._architecture[1] * (self._architecture[0] + 1)], \
-                              (int(self._architecture[1]), int((self._architecture[0] + 1))), order="F")}
+                              (self._architecture[1], (self._architecture[0] + 1)), order="F")}
          
         lastIndex = self._architecture[1] * (self._architecture[0] + 1) # index of the last weight for the first layer in the vector
         
         for layer in self._architecture.keys()[2:]:
             thetas[layer] = np.reshape(params[lastIndex:lastIndex + (self._architecture[layer] * (self._architecture[layer-1] + 1))], \
-                                      (int(self._architecture[layer]), int((self._architecture[layer-1] + 1))), order="F")
+                                      (self._architecture[layer], (self._architecture[layer-1] + 1)), order="F")
             lastIndex = lastIndex + (self._architecture[layer] * (self._architecture[layer-1] + 1))
         
         return thetas
@@ -577,7 +577,7 @@ class NeuralNet(object):
         m = int(np.shape(input)[1]) # get the number of examples
         input = np.concatenate((np.tile(1, (1, m)), input), axis=0) # add bias units
         hypothesis, activations, regTerm = self.feedForward(thetas, input, regTerm=0, m=m)
-        pred = np.ones((m,2))
+        pred = np.ones((np.shape(m,2))
         pred[:,0] = pred[:,0] * (1-hypothesis)
         pred[:,1] = pred[:,1] * hypothesis
         return pred
