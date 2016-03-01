@@ -31,14 +31,14 @@ def group_images(imageList):
             tti_pairs[id+mjd].append(item)
     return tti_pairs
 
-def noNorm(imageFile, path,  extent):
-    return np.nan_to_num(TargetImage(path+imageFile, extent).unravelObject())
+def noNorm(imageFile, path,  extent, extension):
+    return np.nan_to_num(TargetImage(path+imageFile, extent, extension).unravelObject())
 
-def signPreserveNorm(imageFile, path, extent):
-    return np.nan_to_num(TargetImage(path+imageFile, extent).signPreserveNorm())
+def signPreserveNorm(imageFile, path, extent, extension):
+    return np.nan_to_num(TargetImage(path+imageFile, extent, extension).signPreserveNorm())
 
-def bg_sub_signPreserveNorm(imageFile, path, extent):
-    vec = signPreserveNorm(imageFile, path, extent)
+def bg_sub_signPreserveNorm(imageFile, path, extent, extension):
+    vec = signPreserveNorm(imageFile, path, extent, extension)
     image = np.reshape(vec, (20,20), order="F")
 
     image = gaussian_filter(image, 1)
@@ -50,7 +50,7 @@ def bg_sub_signPreserveNorm(imageFile, path, extent):
     
     return np.ravel(image - dilated, order="F")
     
-def generate_vectors(imageList, path, extent, normFunc):
+def generate_vectors(imageList, path, extent, normFunc, extension):
 
     m = len(imageList)
     X = np.ones((m, 4*extent*extent))
@@ -75,12 +75,12 @@ def generate_key(file):
     mjd = file.split("_")[1].split(".")[0]
     return id+mjd
     
-def process_examples(list, path, label, extent, normFunc, trainingFraction=.75):
+def process_examples(list, path, label, extent, normFunc, extension, trainingFraction=.75):
 
     m = len(list) # number of training examples
     np.random.seed(0)
     
-    X = generate_vectors(list, path, extent, normFunc)
+    X = generate_vectors(list, path, extent, normFunc, extension)
     grouped_X = np.ones((np.shape(X)))
     grouped_dict = group_images(list[:])
     
@@ -172,6 +172,7 @@ def main():
                                    " -o <output file>\n"+\
                                    " -n <negative data file [optional]>\n"+\
                                    " -e <extent [default=10]>\n"+\
+                                   " -E <extension [default=1]>\n"+\
                                    " -s <skew factor [default=1]>\n"+\
                                    " -r <augment training data with rotation [optional]>\n"
                                    " -N <normalisation function [default=signPreserveNorm]>")
@@ -184,6 +185,8 @@ def main():
                       help="specify output file name")
     parser.add_option("-e", dest="extent", type="int", \
                       help="specify image size [default=10]")
+    parser.add_option("-E", dest="extension", type="int", \
+                      help="specify image extension [default=1]")
     parser.add_option("-s", dest="skewFactor", type="int", \
                       help="specify skew to negative examples [default=1]")
     parser.add_option("-r", dest="rotate", action="store_true", \
@@ -197,6 +200,7 @@ def main():
     negFile = options.negFile
     outputFile = options.outputFile
     extent = options.extent
+    extension = options.extension
     skewFactor = options.skewFactor
     rotate = options.rotate
     print rotate
@@ -208,6 +212,9 @@ def main():
         
     if extent == None:
         extent = 10
+   
+    if extension == None:
+        extension = 1
         
     if skewFactor == None:
         skewFactor = 1
@@ -228,7 +235,7 @@ def main():
         imageList = imageFile_to_list(posFile)
         path = posFile.strip(posFile.split("/")[-1])
         print path
-        X = generate_vectors(imageList, path, extent, normFunc)
+        X = generate_vectors(imageList, path, extent, normFunc, extension)
         sio.savemat(outputFile, {"X": X, "images": imageList})
         exit(0)
 
@@ -238,7 +245,7 @@ def main():
     m_pos = len(pos_list)
     path = posFile.strip(posFile.split("/")[-1])
     print path
-    pos_data = process_examples(pos_list, path, 1, extent, normFunc)
+    pos_data = process_examples(pos_list, path, 1, extent, normFunc, extension)
     print "[+] %d positive examples processed." % m_pos
     
     # process positive examples
@@ -249,7 +256,7 @@ def main():
     m_neg = len(neg_list)
     path = negFile.strip(negFile.split("/")[-1])
     print path
-    neg_data = process_examples(neg_list, path, 0, extent, normFunc)
+    neg_data = process_examples(neg_list, path, 0, extent, normFunc, extension)
     print "[+] %d negative examples processed." % m_neg
 
     print "[+] Building training set."
