@@ -57,13 +57,13 @@ def generate_vectors(imageList, path, extent, normFunc, extension):
 
     for i,imageFile in enumerate(imageList):
         try:
-            vector = normFunc(imageFile, path+"0/", extent)
+            vector = normFunc(imageFile, path+"0/", extent, extension)
         except IOError:
             try:
-                vector = normFunc(imageFile, path+"2/", extent)
+                vector = normFunc(imageFile, path+"2/", extent, extension)
             except IOError:
                 try:
-                    vector = normFunc(imageFile, path+"1/", extent)
+                    vector = normFunc(imageFile, path+"1/", extent, extension)
                 except IOError:
                     print "[!] Exiting: Could not find %s" % imageFile
                     exit(0)
