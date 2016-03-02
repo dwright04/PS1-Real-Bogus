@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_curve, f1_score
 from sklearn import preprocessing
-sys.path.insert(1, "/Users/dew/development/PS1-Real-Bogus/demos/")
+#sys.path.insert(1, "/Users/dew/development/PS1-Real-Bogus/demos/")
 import mlutils
-sys.path.insert(1, "/Users/dew/development/PS1-Real-Bogus/ufldl/sparsefiltering/")
+sys.path.insert(1, "../../ufldl/")
 from SoftMaxOnline import SoftMaxOnline
 from NeuralNet import SoftMaxClassifier
 try:
@@ -15,7 +15,7 @@ try:
 except ImportError:
     import pickle
 
-predictionsPath = "../data/predictions/"
+predictionsPath = "predictions/"
 
 def predict(clfFile, X):
 
@@ -523,22 +523,9 @@ def main():
             if poolFile != None:
                 Xs = []
                 try:
-                    scaler = preprocessing.MinMaxScaler()
-                    #tmp = sio.loadmat("../ufldl/sparsefiltering/features/SF_maxiter100_L1_md_20x20_skew4_SignPreserveNorm_with_confirmed1_6x6_k400_patches_stl-10_unlabeled_meansub_20150409_psdb_6x6_pooled5.mat")["pooledFeaturesTrain"]
-                    tmp = sio.loadmat("../ufldl/sparsefiltering/features/SF_maxiter100_L1_3pi_20x20_skew2_signPreserveNorm_6x6_k400_patches_stl-10_unlabeled_meansub_20150409_psdb_6x6_pooled5.mat")["pooledFeaturesTrain"]
-                    tmp = np.transpose(tmp, (0,2,3,1))
-                    numTrainImages = np.shape(tmp)[3]
-                    tmp = np.reshape(tmp, (int((tmp.size)/float(numTrainImages)), \
-                                               numTrainImages), order="F")
-                    #print np.shape(tmp)
-                    scaler.fit(tmp.T)  # Don't cheat - fit only on training data
-                    tmp = None
-                    
                     features = sio.loadmat(poolFile)
-                    #pooledFeaturesTrain = np.concatenate((features["pooledFeaturesTrain"],features["pooledFeaturesTest"] ),axis=1)
                     try:
                         pooledFeaturesTrain = features["pooledFeaturesTrain"]
-                        #pooledFeaturesTrain = features["X"]
                     except KeyError:
                         pooledFeaturesTrain = features["pooledFeatures"]
 
@@ -547,14 +534,13 @@ def main():
                     X = np.reshape(X, (int((pooledFeaturesTrain.size)/float(numTrainImages)), \
                                    numTrainImages), order="F")
 
-                    #scaler = preprocessing.MinMaxScaler()
-                    #scaler.fit(X.T)  # Don't cheat - fit only on training data
+                    scaler = preprocessing.MinMaxScaler()
+                    scaler.fit(X.T)  # Don't cheat - fit only on training data
                     X = scaler.transform(X.T)
                     if dataSet == "training":
                         pass
                     elif dataSet == "test":
                         pooledFeaturesTest = features["pooledFeaturesTest"]
-                        #pooledFeaturesTest = features["testX"]
 
                         X = np.transpose(pooledFeaturesTest, (0,2,3,1))
                         numTestImages = np.shape(X)[3]
