@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 from NeuralNet import NeuralNet
-#from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve
 from sklearn.metrics import f1_score, accuracy_score
 from sklearn import preprocessing
 import matplotlib as mpl
@@ -80,14 +80,14 @@ def main():
         print "[!] Exiting: %s Not Found" % (dataFile)
         exit(0)
 
-    #scaler = preprocessing.StandardScaler().fit(data["X"])
+    scaler = preprocessing.StandardScaler().fit(data["X"])
     #d = sio.loadmat("../contextual_classification_dataset_20150706_shuffled.mat")
-    d = sio.loadmat("../contextual_classification_dataset_pca2_20150707_shuffled.mat")
-    scaler = preprocessing.StandardScaler().fit(d["X"])
+    #d = sio.loadmat("../contextual_classification_dataset_pca2_20150707_shuffled.mat")
+    #scaler = preprocessing.StandardScaler().fit(d["X"])
     if dataSet == "training":
         print np.shape(data["X"])
         print data["y"]
-        print data["ids"]
+        #print data["ids"]
         X = scaler.transform(data["X"]).T
         y = np.squeeze(data["y"])
     elif dataSet == "test":
@@ -100,7 +100,8 @@ def main():
     except IOError:
         print "[!] Exiting: %s Not Found" % (classifierFile)
         exit(0)
-    #measure_FoM(X, y, classifier)
+    print measure_FoM(X, y, classifier)
+    """
     print np.array(classifier.predict_proba(X) <= .5)[:,0]
     print "f1 score : %.3f" % f1_score(np.squeeze(y), np.array(classifier.predict_proba(X) <= .5)[:,0])
     print "accuracy score : %.3f" % accuracy_score(np.squeeze(y), np.array(classifier.predict_proba(X) <= .5)[:,0])
@@ -149,7 +150,7 @@ def main():
     print accuracy_score(y, pred)
     plt.legend(loc="upper left", numpoints=1)
     plt.show()
-
+"""
     #print "f1 score : %.3f" % f1_score(np.squeeze(y), np.array(classifier.predict(X))[:,0])
 
 #    pred = np.array(classifier.predict_proba(X) <= .5, dtype="int64")[:,0]
