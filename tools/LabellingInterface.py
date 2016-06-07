@@ -32,6 +32,7 @@ class mainFrame(wx.Frame):
         
         self.dataFile = dataFile
         data = sio.loadmat(self.dataFile)
+
         self.X = np.concatenate((data["X"], data["testX"]))
         self.y = np.concatenate((np.squeeze(data["y"]), np.squeeze(data["testy"])))
         try:
@@ -76,6 +77,7 @@ class mainFrame(wx.Frame):
         
         self.create_main_panel()
         self.navigation_control.previous_button.Disable()
+        self.reset_button.Disable()
 
     def create_main_panel(self):
     
@@ -188,32 +190,47 @@ class mainFrame(wx.Frame):
             label = self.y[self.start+self.AXES.index(self.axes)]
             if label == 0:
                 self.new_real_files.append(file.split("/")[-1])
+                print "1"
             elif label == 1:
                 self.new_bogus_files.append(file.split("/")[-1])
-            self.draw_fig()
-            self.canvas.draw()
-            self.canvas.Refresh()
+                print "2"
+        elif event.button is 3 and file.split("/")[-1] in set(self.new_real_files):
+                self.new_real_files.remove(file.split("/")[-1])
+                print "3"
+        elif event.button is 3 and file.split("/")[-1] in set(self.new_bogus_files):
+                self.new_bogus_files.remove(file.split("/")[-1])
+                print "4"
         else:
             pass
+        self.draw_fig(init=True)
+        self.canvas.draw()
+        self.canvas.Refresh()
 
     def on_build(self, event):
-        X = self.X
-        y = np.squeeze(self.y)
-        print np.shape(y)
-        for i,file in enumerate(self.files):
+        data = sio.loadmat(self.dataFile)
+
+        X = np.concatenate((data["X"], data["testX"]))
+        y = np.concatenate((np.squeeze(data["y"]), np.squeeze(data["testy"])))
+        try:
+            files = data["files"]
+        except KeyError:
+            files = data["train_files"]
+        files = np.concatenate((np.squeeze(files), np.squeeze(data["test_files"])))
+
+        for i,file in enumerate(files):
             print file.rstrip().split("/")[-1], y[i],
-            if file.rstrip().split("/")[-1] in self.new_bogus_files:
+            if file.rstrip().split("/")[-1] in set(self.new_bogus_files):
                 if y[i] == 1:
                     y[i] = 0
-            if file.rstrip().split("/")[-1] in self.new_real_files:
+            if file.rstrip().split("/")[-1] in set(self.new_real_files):
                 if y[i] == 0:
                     y[i] = 1
             print y[i]
         #outputFile = raw_input("Specify output file : ")
-        current_time = datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         sio.savemat("relabelled_%s_" % current_time + self.dataFile.split("/")[-1], \
-                   {"X":X[:.75*self.m], "y":y[:.75*self.m], "train_files": self.files[:.75*self.m], \
-                    "testX":X[.75*self.m:], "testy":y[.75*self.m:], "test_file":self.files[.75*self.m:]})
+                   {"X":X[:.75*self.m], "y":y[:.75*self.m], "train_files": files[:.75*self.m], \
+                    "testX":X[.75*self.m:], "testy":y[.75*self.m:], "test_file":files[.75*self.m:]})
                     
         print "[+] Processing complete."
             
