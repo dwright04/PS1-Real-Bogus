@@ -191,20 +191,31 @@ class mainFrame(wx.Frame):
             if label == 0:
                 self.new_real_files.append(file.split("/")[-1])
                 print "1"
+                self.draw_fig()
+                self.canvas.draw()
+                self.canvas.Refresh()
             elif label == 1:
                 self.new_bogus_files.append(file.split("/")[-1])
                 print "2"
+                self.draw_fig()
+                self.canvas.draw()
+                self.canvas.Refresh()
         elif event.button is 3 and file.split("/")[-1] in set(self.new_real_files):
                 self.new_real_files.remove(file.split("/")[-1])
                 print "3"
+                self.draw_fig(init=True)
+                self.canvas.draw()
+                self.canvas.Refresh()
         elif event.button is 3 and file.split("/")[-1] in set(self.new_bogus_files):
                 self.new_bogus_files.remove(file.split("/")[-1])
                 print "4"
+                self.draw_fig(init=True)
+                self.canvas.draw()
+                self.canvas.Refresh()
         else:
             pass
-        self.draw_fig(init=True)
-        self.canvas.draw()
-        self.canvas.Refresh()
+        #self.draw_fig(init=True)
+
 
     def on_build(self, event):
         data = sio.loadmat(self.dataFile)
