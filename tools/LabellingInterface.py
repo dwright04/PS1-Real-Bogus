@@ -228,9 +228,17 @@ class mainFrame(wx.Frame):
             print y[i]
         #outputFile = raw_input("Specify output file : ")
         current_time = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        sio.savemat("relabelled_%s_" % current_time + self.dataFile.split("/")[-1], \
-                   {"X":X[:.75*self.m], "y":y[:.75*self.m], "train_files": files[:.75*self.m], \
-                    "testX":X[.75*self.m:], "testy":y[.75*self.m:], "test_file":files[.75*self.m:]})
+        
+        if "relabelled" in self.dataFile:
+            saveFile = self.dataFile.split("/")[-1][31:]
+            print saveFile
+            sio.savemat("relabelled_%s_" % current_time + saveFile, \
+                       {"X":X[:.75*self.m], "y":y[:.75*self.m], "train_files": files[:.75*self.m], \
+                        "testX":X[.75*self.m:], "testy":y[.75*self.m:], "test_files":files[.75*self.m:]})
+        else:
+            sio.savemat("relabelled_%s_" % current_time + self.dataFile.split("/")[-1], \
+                       {"X":X[:.75*self.m], "y":y[:.75*self.m], "train_files": files[:.75*self.m], \
+                        "testX":X[.75*self.m:], "testy":y[.75*self.m:], "test_files":files[.75*self.m:]})
                     
         print "[+] Processing complete."
             
