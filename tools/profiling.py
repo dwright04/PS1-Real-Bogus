@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from classify import predict
 from sklearn.metrics import roc_curve
 from sklearn import preprocessing
-sys.path.insert(1, "/Users/dew/development/PS1-Real-Bogus/demos/")
 import mlutils
 
 def visualiseImages(X, pred, annotate=True):
@@ -104,16 +103,16 @@ def main():
     
     if poolFile != None:
         try:
-            scaler = preprocessing.MinMaxScaler()
+            #scaler = preprocessing.MinMaxScaler()
             #tmp = sio.loadmat("../ufldl/sparsefiltering/features/SF_maxiter100_L1_md_20x20_skew4_SignPreserveNorm_with_confirmed1_6x6_k400_patches_stl-10_unlabeled_meansub_20150409_psdb_6x6_pooled5.mat")["pooledFeaturesTrain"]
-            tmp = sio.loadmat("../ufldl/sparsefiltering/features/SF_maxiter100_L1_3pi_20x20_skew2_signPreserveNorm_6x6_k400_patches_stl-10_unlabeled_meansub_20150409_psdb_6x6_pooled5.mat")["pooledFeaturesTrain"]
-            tmp = np.transpose(tmp, (0,2,3,1))
-            numTrainImages = np.shape(tmp)[3]
-            tmp = np.reshape(tmp, (int((tmp.size)/float(numTrainImages)), \
-                             numTrainImages), order="F")
-            print np.shape(tmp)
-            scaler.fit(tmp.T)  # Don't cheat - fit only on training data
-            tmp = None
+            #tmp = sio.loadmat("../ufldl/sparsefiltering/features/SF_maxiter100_L1_3pi_20x20_skew2_signPreserveNorm_6x6_k400_patches_stl-10_unlabeled_meansub_20150409_psdb_6x6_pooled5.mat")["pooledFeaturesTrain"]
+            #tmp = np.transpose(tmp, (0,2,3,1))
+            #numTrainImages = np.shape(tmp)[3]
+            #tmp = np.reshape(tmp, (int((tmp.size)/float(numTrainImages)), \
+            #                 numTrainImages), order="F")
+            #print np.shape(tmp)
+            #scaler.fit(tmp.T)  # Don't cheat - fit only on training data
+            #tmp = None
                                            
             features = sio.loadmat(poolFile)
             #pooledFeaturesTrain = np.concatenate((features["pooledFeaturesTrain"],features["pooledFeaturesTest"] ),axis=1)
@@ -122,8 +121,8 @@ def main():
             numTrainImages = np.shape(X)[3]
             X = np.reshape(X, (int((pooledFeaturesTrain.size)/float(numTrainImages)), \
                            numTrainImages), order="F")
-            #scaler = preprocessing.MinMaxScaler()
-            #scaler.fit(X.T)  # Don't cheat - fit only on training data
+            scaler = preprocessing.MinMaxScaler()
+            scaler.fit(X.T)  # Don't cheat - fit only on training data
             X = scaler.transform(X.T)
             if dataSet == "training":
                 pass
