@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys, multiprocessing
+sys.path.append("../tools/")
 import scipy.io as sio
 import multiprocessingUtils
 #from DeepANNMultiLayer import *
@@ -43,12 +44,12 @@ def main(argv = None):
     #print np.shape(train_y)
     #archGrid = [200]
     hiddenSize = 200
-    #lambdaGrid = [1e-2, 3e-2, 1e-1, 3e-1, 1, 3, 1e+1, 3e+1, 1e+2]
+    lambdaGrid = [1e-2, 3e-2, 1e-1, 3e-1, 1, 3, 1e+1, 3e+1, 1e+2]
     #lambdaGrid = [100]
     lambdaGrid = [1]
     taskList = []
 
-    kf = KFold(len(train_y), n_folds=5, indices=False)
+    kf = KFold(len(train_y), n_folds=5)
     fold = 1
     for train, test in kf:
         X, y = train_x[train], np.squeeze(train_y[train])
@@ -58,10 +59,10 @@ def main(argv = None):
         for LAMBDA in lambdaGrid:
                 arch = {1:int(hiddenSize)}
 
-                #taskList.append(trainNetwork(NeuralNet(X.T, y, architecture=arch, LAMBDA=LAMBDA, maxiter=10000), \
-                #                     "cv/trainedNet_NerualNet_%s_arch%d_lambda%f_fold%d.mat" % \
-                #                     (argv[1].split("/")[-1].split(".")[0], arch[1], LAMBDA, fold)))
-
+                taskList.append(trainNetwork(NeuralNet(X.T, y, architecture=arch, LAMBDA=LAMBDA, maxiter=10000), \
+                                     "cv/trainedNet_NerualNet_%s_arch%d_lambda%f_fold%d.mat" % \
+                                     (argv[1].split("/")[-1].split(".")[0], arch[1], LAMBDA, fold)))
+                """
                 outputFile = "cv/trainedNet_NerualNet_%s_arch%d_lambda%f_fold%d.mat" % \
                               (argv[1].split("/")[-1].split(".")[0], arch[1], LAMBDA, fold)
                 #outputFile = "cv/trainedNet_DropoutNerualNet_%s_arch%d_fold%d.mat" % \
@@ -77,15 +78,15 @@ def main(argv = None):
 
                 nn.train()
                 nn.saveNetwork(outputFile)
-
+                """
         fold +=1
 
-    """
+
     cpu_count = multiprocessing.cpu_count() - 1
     print "%d available CPUs.\n" % (cpu_count)
 
     multiprocessingUtils.multiprocessTaskList(taskList, cpu_count)
-    """
+
     """
     outputFile = "trainedNet_NerualNet_%s_arch%d_lambda%f.mat" % \
                  (dataFile.split("/")[-1].split(".")[0], archGrid[0], lambdaGrid[0])

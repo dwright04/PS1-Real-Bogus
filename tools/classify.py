@@ -17,6 +17,18 @@ except ImportError:
 
 predictionsPath = "predictions/"
 
+def one_percent_mdr(y, pred, fom):
+    fpr, tpr, thresholds = roc_curve(y, pred)
+    FoM = fpr[np.where(1-tpr<=fom)[0][0]] # FPR at 1% MDR
+    threshold = thresholds[np.where(1-tpr<=fom)[0][0]]
+    return FoM, threshold, fpr, tpr
+
+def one_percent_fpr(y, pred, fom):
+    fpr, tpr, thresholds = roc_curve(y, pred)
+    FoM = 1-tpr[np.where(fpr<=fom)[0][-1]] # MDR at 1% FPR
+    threshold = thresholds[np.where(fpr<=fom)[0][-1]]
+    return FoM, threshold, fpr, tpr
+
 def predict(clfFile, X):
 
     if "SVM" in clfFile or "RF" in clfFile:
@@ -104,16 +116,16 @@ def hypothesisDist(y, pred, threshold=0.5):
     leg.get_frame().set_alpha(0.5)
     plt.show()
 
-def plot_ROC(Ys, preds, color="#FF0066", Labels=None):
+def plot_ROC(Ys, preds, fom_func, color="#FF0066", Labels=None):
 
     fig = plt.figure()
-    font = {"size": 22}
-    plt.rc("font", **font)
-    plt.rc("legend", fontsize=20)
+    #font = {"size": 22}
+    #plt.rc("font", **font)
+    #plt.rc("legend", fontsize=20)
 
     plt.xlabel("Missed Detection Rate (MDR)")
     plt.ylabel("False Positive Rate (FPR)")
-    plt.yticks([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1.0])
+    #
     plt.ylim((0,1.05))
     default_ticks = [0, 0.05, 0.10, 0.25]
     ticks = []
@@ -123,21 +135,23 @@ def plot_ROC(Ys, preds, color="#FF0066", Labels=None):
 
     for j,pred in enumerate(preds):
         y = Ys[j]
-        fpr, tpr, thresholds = roc_curve(y, pred)
+        #fpr, tpr, thresholds = roc_curve(y, pred)
     
         FoMs = []
         decisionBoundaries = []
         if len(preds) == 1:
-            FPRs = [0.01, 0.05, 0.1]
+            foms = [0.01, 0.05, 0.1]
             color="#3366FF"
         else:
-            FPRs = [0.01]
+            foms = [0.01]
             color = colours[j]
             #label=Labels[j]
 
-        for FPR in FPRs:
-            FoMs.append(1-tpr[np.where(fpr<=FPR)[0][-1]])
-            decisionBoundaries.append(thresholds[np.where(fpr<=FPR)[0][-1]])
+        for fom in foms:
+            #FoMs.append(1-tpr[np.where(fpr<=FPR)[0][-1]])
+            FoM, threshold, fpr, tpr = fom_func(y, pred, fom)
+            FoMs.append(FoM)
+            decisionBoundaries.append(threshold)
         
         plt.plot(1-tpr, fpr, "k-", lw=5)
         #color = "#FF0066" # pink
@@ -148,26 +162,46 @@ def plot_ROC(Ys, preds, color="#FF0066", Labels=None):
             plt.plot(1-tpr, fpr, color=color, lw=4, label=Labels[j])
         else:
             plt.plot(1-tpr, fpr, color=color, lw=4)
-        for i,FoM in enumerate(FoMs):
-            print "[+] FoM at %.3f FPR : %.3f | decision boundary : %.3f " % (FPRs[i], FoM, decisionBoundaries[i])
-            plt.plot([x for x in np.arange(0,FoM+1e-3,1e-3)], \
-                     FPRs[i]*np.ones(np.shape(np.array([x for x in np.arange(0,FoM+1e-3,1e-3)]))), \
-                     "k--", lw=3, zorder=100)
+        if fom_func == one_percent_fpr:
+            for i,FoM in enumerate(FoMs):
+                print "[+] FoM at %.3f FPR : %.3f | decision boundary : %.3f " % (foms[i], FoM, decisionBoundaries[i])
+                plt.plot([x for x in np.arange(0,FoM+1e-3,1e-3)], \
+                         foms[i]*np.ones(np.shape(np.array([x for x in np.arange(0,FoM+1e-3,1e-3)]))), \
+                         "k--", lw=3, zorder=100)
 
-            plt.plot(FoM*np.ones(np.shape([x for x in np.arange(0,FPRs[i]+1e-3, 1e-3)])), \
-                    [x for x in np.arange(0,FPRs[i]+1e-3, 1e-3)], "k--", lw=3, zorder=100)
-            #print round(FoM, 2)
-            if round(FoM,2) in default_ticks:
-                default_ticks.remove(round(FoM,2))
-                ticks.append(FoM)
-            else:
-                ticks.append(FoM)
-        plt.xticks(default_ticks+ticks, rotation=70)
-                 
-        locs, labels = plt.xticks()
-        plt.xticks(locs, map(lambda x: "%.3f" % x, locs))
+                plt.plot(FoM*np.ones(np.shape([x for x in np.arange(0,foms[i]+1e-3, 1e-3)])), \
+                        [x for x in np.arange(0,foms[i]+1e-3, 1e-3)], "k--", lw=3, zorder=100)
+                if round(FoM,1) in default_ticks:
+                    default_ticks.remove(round(FoM,1))
+                    ticks.append(FoM)
+                else:
+                    ticks.append(FoM)
+                plt.xticks(default_ticks+ticks, rotation=70)
+                locs, labels = plt.xticks()
+                plt.xticks(locs, map(lambda x: "%.3f" % x, locs))
+                plt.yticks([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1.0])
+        elif fom_func == one_percent_mdr:
+            for i,FoM in enumerate(FoMs):
+                print "[+] FoM at %.3f MDR : %.3f | decision boundary : %.3f " % (foms[i], FoM, decisionBoundaries[i])
+                plt.plot(foms[i]*np.ones(np.shape(np.array([x for x in np.arange(0,FoM+1e-3,1e-3)]))), \
+                         [x for x in np.arange(0,FoM+1e-3,1e-3)], \
+                         "k--", lw=3, zorder=100)
+
+                plt.plot([x for x in np.arange(0,foms[i]+1e-3, 1e-3)],\
+                         FoM*np.ones(np.shape([x for x in np.arange(0,foms[i]+1e-3, 1e-3)])), \
+                         "k--", lw=3, zorder=100)
+                if round(FoM,1) in default_ticks:
+                    default_ticks.remove(round(FoM,1))
+                    ticks.append(FoM)
+                else:
+                    ticks.append(FoM)
+                plt.yticks(default_ticks+ticks, rotation=70)
+                locs, labels = plt.yticks()
+                plt.yticks(locs, map(lambda x: "%.3f" % x, locs))
+                plt.xticks([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1.0])
     if Labels:
         plt.legend()
+    #plt.savefig('FoM.pdf', bbox_inches='tight')
     plt.show()
 
 def test_FDR_procedure(y, pred):
@@ -359,6 +393,21 @@ def generate_Learning_Curve(X, y, classifierFile):
     plt.plot(steps, cv_FoMs)
     plt.show()
 
+def feature_importance(X, classifier, feature_names):
+    importances = classifier.feature_importances_
+    indices = np.argsort(importances)[::-1]
+    std = np.std([tree.feature_importances_ for tree in classifier.estimators_],
+                 axis=0)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.bar(range(X.shape[1]), importances[indices],
+           color="r", yerr=std[indices], align="center")
+    ax.set_xticks(range(X.shape[1]))
+    ax.set_xticklabels(np.array(feature_names)[indices],rotation=70)
+    plt.xlim([-1, X.shape[1]])
+    #plt.savefig('feature_importances.pdf', bbox_inches='tight')
+    plt.show()
+
 def main():
     
 
@@ -367,10 +416,10 @@ def main():
                                    " -c <classifier files [comma-separated]>\n"+\
                                    " -t <threshold [default=0.5]>\n"+\
                                    " -s <data set>\n"+\
-                                   " -o <output file>\n"
+                                   " -o <output file>\n"+\
+                                   " -f <figure of merit [\"fpr\" or \"mdr\"]>"
                                    " -p <plot hypothesis distribution [optional]>\n"+\
                                    " -r <plot ROC curve [optional]>\n"+\
-                                   " -f <output Figure of Merit [optional]>\n"+\
                                    " -n <classify by name [optional]>\n"+\
                                    " -P <pooled features file [optional]>\n"+\
                                    " -L <plot learning curve [optional]>\n"+\
@@ -384,14 +433,14 @@ def main():
                       help="specify decision boundary threshold [default=0.5]")
     parser.add_option("-o", dest="outputFile", type="string", \
                       help="specify output file")
+    parser.add_option("-f", dest="fom", type="string", \
+                      help="specify the figure of merit either 1% FPR or 1% MDR - choose \"fpr\" or \"mdr\"")
     parser.add_option("-s", dest="dataSet", type="string", \
                       help="specify data set to analyse [default=test]")
     parser.add_option("-p", action="store_true", dest="plot", \
                       help="specify whether to plot the hypothesis distribution [optional]")
     parser.add_option("-r", action="store_true", dest="roc", \
                       help="specify whether to plot the ROC curve [optional]")
-    parser.add_option("-f", action="store_true", dest="fom", \
-                      help="specify whether to output Figure of Merit to stdout [optional]")
     parser.add_option("-n", action="store_true", dest="byName", \
                       help="specify whether to classify objects by name [optional]")
     parser.add_option("-P", dest="poolFile", type="string", \
@@ -408,10 +457,10 @@ def main():
         classifierFiles = options.classifierFiles.split(",")
         threshold = options.threshold
         outputFile = options.outputFile
+        fom = options.fom
         dataSet = options.dataSet
         plot = options.plot
         roc = options.roc
-        fom = options.fom
         byName = options.byName
         poolFile = options.poolFile
         learningCurve = options.learningCurve
@@ -433,6 +482,14 @@ def main():
     
     if dataSet == None:
         dataSet = "test"
+
+    if fom == "fpr":
+        fom_func = one_percent_fpr
+    elif fom == "mdr":
+        fom_func = one_percent_mdr
+    else:
+        fom_func = one_percent_fpr
+
         
     Xs = []
     Ys = []
@@ -563,10 +620,10 @@ def main():
                 generate_Learning_Curve(X, y, classifierFile)
             else:
                 pred = predict(classifierFile, X)
-                predFile = predictionsPath+classifierFile.split("/")[-1].replace(".mat","")+"_predictions_%s.mat"%dataSet
-                sio.savemat(predFile,{"ids":Files[classifierFiles.index(classifierFile)],"predictions":pred})
+                #predFile = predictionsPath+classifierFile.split("/")[-1].replace(".mat","")+"_predictions_%s.mat"%dataSet
+                #sio.savemat(predFile,{"ids":Files[classifierFiles.index(classifierFile)],"predictions":pred})
                 preds.append(np.squeeze(pred))
-    X = Xs = None
+    #X = Xs = None
 
     if outputFile != None and not byName:
         output = open(outputFile, "w")
@@ -588,11 +645,6 @@ def main():
             Ys = [labels_byName(files, Ys[0])]
         except NameError, e:
             print e
-
-
-    if fom:
-        for pred in preds:
-            FoM(Ys[preds.index(pred)], pred, threshold)
         
     if plot:
         try:
@@ -602,9 +654,18 @@ def main():
             print "[!] NameError : %s", e
 
     if roc:
-        plot_ROC(Ys, preds, Labels=labels)
+        plot_ROC(Ys, preds, fom_func, Labels=labels)
         #test_FDR_procedure(Ys[0], preds[0])
 
-    
+    clf = pickle.load(open(classifierFiles[0],"rb"))
+    if type(clf) == type(RandomForestClassifier()):
+        try:
+            feature_names = []
+            for f in sio.loadmat(dataFiles[0])["features"]:
+                feature_names.append(str(f))
+            feature_importance(Xs[0], clf, feature_names)
+        except KeyError:
+            feature_importance(Xs[0], clf, range(Xs[0].shape[1]))
+
 if __name__ == "__main__":
     main()

@@ -30,7 +30,7 @@ def main():
     C_grid = [5]
     gamma_grid = [1]
 
-    kf = KFold(m, n_folds=5, indices=False)
+    kf = KFold(m, n_folds=5)
     fold = 1
     for kernel in kernel_grid:
         for C in C_grid:
