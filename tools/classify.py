@@ -408,6 +408,34 @@ def feature_importance(X, classifier, feature_names):
     #plt.savefig('feature_importances.pdf', bbox_inches='tight')
     plt.show()
 
+def print_misclassified(y, pred, files, fom_func, Labels=None):
+
+    #fpr, tpr, thresholds = roc_curve(y, pred)
+
+    FoMs = []
+    decisionBoundaries = []
+
+    fom = 0.01
+
+    #FoMs.append(1-tpr[np.where(fpr<=FPR)[0][-1]])
+    FoM, threshold, fpr, tpr = fom_func(y, pred, fom)
+    negatives = np.where(y==0)
+    positives = np.where(y==1)
+    
+    falsePositives = files[negatives][np.where(pred[negatives]>threshold)]
+
+    
+    print "[+] False positives (%d):" % len(falsePositives)
+    for falsePositive in falsePositives:
+        print "\t " + str(falsePositive)
+    print
+    missedDetections = files[positives][np.where(pred[positives]<=threshold)]
+    print "[+] Missed Detections (%d):" % len(missedDetections)
+    for missedDetection in missedDetections:
+        print "\t " + str(missedDetection)
+    print
+
+
 def main():
     
 
@@ -423,7 +451,8 @@ def main():
                                    " -n <classify by name [optional]>\n"+\
                                    " -P <pooled features file [optional]>\n"+\
                                    " -L <plot learning curve [optional]>\n"+\
-                                   " -l <labels for plotting [optional, comma-separated]>")
+                                   " -l <labels for plotting [optional, comma-separated]>\n"+\
+                                   " -m <print miss classified file names>")
 
     parser.add_option("-F", dest="dataFiles", type="string", \
                       help="specify data file[s] to analyse")
@@ -449,6 +478,8 @@ def main():
                       help="specify whether to generate a leraning curve [optional]")
     parser.add_option("-l", dest="labels", type="string", \
                       help="specify label[s] for plots [optional]")
+    parser.add_option("-m", action="store_true", dest="miss", \
+                      help="specify whether or not to print misclassified file names [optional]")
                       
     (options, args) = parser.parse_args()
     
@@ -464,6 +495,7 @@ def main():
         byName = options.byName
         poolFile = options.poolFile
         learningCurve = options.learningCurve
+        miss = options.miss
         try:
             labels = options.labels.split(",")
         except:
@@ -666,6 +698,9 @@ def main():
             feature_importance(Xs[0], clf, feature_names)
         except KeyError:
             feature_importance(Xs[0], clf, range(Xs[0].shape[1]))
+
+    if miss:
+        print_misclassified(Ys[0], preds[0], np.squeeze(Files[0]), fom_func, Labels=None)
 
 if __name__ == "__main__":
     main()
