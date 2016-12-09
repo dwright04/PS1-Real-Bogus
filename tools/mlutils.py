@@ -13,7 +13,10 @@ import numpy as np
 import scipy.io as sio
 import scipy.signal as sig
 from sklearn import preprocessing
-from sparseFilter import SparseFilter
+try:
+    from sparseFilter import SparseFilter
+except ImportError, e:
+    print e
 
 def getClassifier():
     """

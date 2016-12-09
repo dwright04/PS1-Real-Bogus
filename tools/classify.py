@@ -408,17 +408,14 @@ def feature_importance(X, classifier, feature_names):
     #plt.savefig('feature_importances.pdf', bbox_inches='tight')
     plt.show()
 
-def print_misclassified(y, pred, files, fom_func, Labels=None):
+def print_misclassified(y, pred, files, fom_func,threshold):
 
     #fpr, tpr, thresholds = roc_curve(y, pred)
 
-    FoMs = []
-    decisionBoundaries = []
-
-    fom = 0.01
+    #fom = 0.01
 
     #FoMs.append(1-tpr[np.where(fpr<=FPR)[0][-1]])
-    FoM, threshold, fpr, tpr = fom_func(y, pred, fom)
+    #FoM, threshold, fpr, tpr = fom_func(y, pred, fom)
     negatives = np.where(y==0)
     positives = np.where(y==1)
     
@@ -700,7 +697,7 @@ def main():
             feature_importance(Xs[0], clf, range(Xs[0].shape[1]))
 
     if miss:
-        print_misclassified(Ys[0], preds[0], np.squeeze(Files[0]), fom_func, Labels=None)
+        print_misclassified(Ys[0], preds[0], np.squeeze(Files[0]), fom_func, threshold)
 
 if __name__ == "__main__":
     main()
