@@ -427,7 +427,7 @@ def print_misclassified(y, pred, files, fom_func,threshold):
     print
     missedDetections = files[positives][np.where(pred[positives]<=threshold)]
     print "[+] Missed Detections (%d):" % len(missedDetections)
-    for missedDetection in missedDetections:
+    for i,missedDetection in enumerate(missedDetections):
         print "\t " + str(missedDetection), pred[positives][i]
     print
 
