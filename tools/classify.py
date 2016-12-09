@@ -408,7 +408,7 @@ def feature_importance(X, classifier, feature_names):
     #plt.savefig('feature_importances.pdf', bbox_inches='tight')
     plt.show()
 
-def print_misclassified(y, pred, files, fom_func,threshold):
+def print_misclassified(y, pred, files, fom_func, threshold):
 
     #fpr, tpr, thresholds = roc_curve(y, pred)
 
@@ -423,12 +423,12 @@ def print_misclassified(y, pred, files, fom_func,threshold):
 
     print "[+] False positives (%d):" % len(falsePositives)
     for i,falsePositive in enumerate(falsePositives):
-        print "\t " + str(falsePositive), pred[negatives][i]
+        print "\t " + str(falsePositive), pred[negatives][np.where(pred[negatives]>threshold)][i]
     print
     missedDetections = files[positives][np.where(pred[positives]<=threshold)]
     print "[+] Missed Detections (%d):" % len(missedDetections)
     for i,missedDetection in enumerate(missedDetections):
-        print "\t " + str(missedDetection), pred[positives][i]
+        print "\t " + str(missedDetection), pred[positives][np.where(pred[positives]<=threshold)][i]
     print
 
 
