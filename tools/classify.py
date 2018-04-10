@@ -657,13 +657,13 @@ def main():
         output = open(outputFile, "w")
         files = Files[0]
         pred = preds[0]
-        if Ys ! = []:
+        if Ys != []:
           y = Ys[0]
           for i,prediction in enumerate(pred):
               output.write(files[i].rstrip() + "," + str(prediction) + "," + str(y[i]) + "\n")
         else:
           for i,prediction in enumerate(pred):
-              output.write(files[i].rstrip() + "," + str(prediction) + "\n")        
+              output.write(files[i].rstrip() + "," + str(prediction) + "\n")
         output.close()
             
     if byName:
